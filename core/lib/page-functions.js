@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {createRequire} from 'module';
+import { createRequire } from "module";
 
-import {Util} from '../../shared/util.js';
+import { Util } from "../../shared/util.js";
 
 /**
  * @fileoverview
@@ -38,14 +38,14 @@ import {Util} from '../../shared/util.js';
  * @return {{__failedInBrowser: boolean, name: string, message: string, stack: string|undefined}}
  */
 function wrapRuntimeEvalErrorInBrowser(err) {
-  if (!err || typeof err === 'string') {
+  if (!err || typeof err === "string") {
     err = new Error(err);
   }
 
   return {
     __failedInBrowser: true,
-    name: err.name || 'Error',
-    message: err.message || 'unknown error',
+    name: err.name || "Error",
+    message: err.message || "unknown error",
     stack: err.stack,
   };
 }
@@ -57,12 +57,13 @@ function wrapRuntimeEvalErrorInBrowser(err) {
  * @return {Array<ParseSelector<T>>}
  */
 function getElementsInDocument(selector) {
-  const realMatchesFn = window.__ElementMatches || window.Element.prototype.matches;
+  const realMatchesFn =
+    window.__ElementMatches || window.Element.prototype.matches;
   /** @type {Array<ParseSelector<T>>} */
   const results = [];
 
   /** @param {NodeListOf<Element>} nodes */
-  const _findAllElements = nodes => {
+  const _findAllElements = (nodes) => {
     for (const el of nodes) {
       if (!selector || realMatchesFn.call(el, selector)) {
         /** @type {ParseSelector<T>} */
@@ -73,11 +74,11 @@ function getElementsInDocument(selector) {
 
       // If the element has a shadow root, dig deeper.
       if (el.shadowRoot) {
-        _findAllElements(el.shadowRoot.querySelectorAll('*'));
+        _findAllElements(el.shadowRoot.querySelectorAll("*"));
       }
     }
   };
-  _findAllElements(document.querySelectorAll('*'));
+  _findAllElements(document.querySelectorAll("*"));
 
   return results;
 }
@@ -88,11 +89,19 @@ function getElementsInDocument(selector) {
  * @param {Array<string>=} ignoreAttrs An optional array of attribute tags to not include in the HTML snippet.
  * @return {string}
  */
-function getOuterHTMLSnippet(element, ignoreAttrs = [], snippetCharacterLimit = 500) {
+function getOuterHTMLSnippet(
+  element,
+  ignoreAttrs = [],
+  snippetCharacterLimit = 500
+) {
   const ATTRIBUTE_CHAR_LIMIT = 75;
   // Autofill information that is injected into the snippet via AutofillShowTypePredictions
   // TODO(paulirish): Don't clean title attribute from all elements if it's unnecessary
-  const autoFillIgnoreAttrs = ['autofill-information', 'autofill-prediction', 'title'];
+  const autoFillIgnoreAttrs = [
+    "autofill-information",
+    "autofill-prediction",
+    "title",
+  ];
 
   // ShadowRoots are sometimes passed in; use their hosts' outerHTML.
   if (element instanceof ShadowRoot) {
@@ -106,9 +115,9 @@ function getOuterHTMLSnippet(element, ignoreAttrs = [], snippetCharacterLimit = 
 
     // Prevent any potential side-effects by appending to a template element.
     // See https://github.com/GoogleChrome/lighthouse/issues/11465
-    const template = element.ownerDocument.createElement('template');
+    const template = element.ownerDocument.createElement("template");
     template.content.append(clone);
-    ignoreAttrs.concat(autoFillIgnoreAttrs).forEach(attribute =>{
+    ignoreAttrs.concat(autoFillIgnoreAttrs).forEach((attribute) => {
       clone.removeAttribute(attribute);
     });
     let charCount = 0;
@@ -124,8 +133,9 @@ function getOuterHTMLSnippet(element, ignoreAttrs = [], snippetCharacterLimit = 
       let dirty = false;
 
       // Replace img.src with img.currentSrc. Same for audio and video.
-      if (attributeName === 'src' && 'currentSrc' in element) {
-        const elementWithSrc = /** @type {HTMLImageElement|HTMLMediaElement} */ (element);
+      if (attributeName === "src" && "currentSrc" in element) {
+        const elementWithSrc =
+          /** @type {HTMLImageElement|HTMLMediaElement} */ (element);
         const currentSrc = elementWithSrc.currentSrc;
         // Only replace if the two URLs do not resolve to the same location.
         const documentHref = elementWithSrc.ownerDocument.location.href;
@@ -144,7 +154,7 @@ function getOuterHTMLSnippet(element, ignoreAttrs = [], snippetCharacterLimit = 
         // Style attributes can be blocked by the CSP if they are set via `setAttribute`.
         // If we are trying to set the style attribute, use `el.style.cssText` instead.
         // https://github.com/GoogleChrome/lighthouse/issues/13630
-        if (attributeName === 'style') {
+        if (attributeName === "style") {
           const elementWithStyle = /** @type {HTMLElement} */ (clone);
           elementWithStyle.style.cssText = attributeValue;
         } else {
@@ -153,13 +163,13 @@ function getOuterHTMLSnippet(element, ignoreAttrs = [], snippetCharacterLimit = 
       }
       charCount += attributeName.length + attributeValue.length;
     }
- 
+
     const reOpeningTag = /^[\s\S]*?>/;
     const [match] = clone.outerHTML.match(reOpeningTag) || [];
     if (match && charCount > snippetCharacterLimit) {
-      return match.slice(0, match.length - 1) + ' …>';
+      return match.slice(0, match.length - 1) + " …>";
     }
-    return match || '';
+    return match || "";
   } catch (_) {
     // As a last resort, fall back to localName.
     return `<${element.localName}>`;
@@ -198,9 +208,13 @@ function computeBenchmarkIndex() {
     let iterations = 0;
 
     while (Date.now() - start < 500) {
-      let s = '';
-      for (let j = 0; j < 10000; j++) s += 'a';
-      if (s.length === 1) throw new Error('will never happen, but prevents compiler optimizations');
+      let s = "";
+      for (let j = 0; j < 10000; j++) s += "a";
+      if (s.length === 1) {
+        throw new Error(
+          "will never happen, but prevents compiler optimizations"
+        );
+      }
 
       iterations++;
     }
@@ -256,22 +270,29 @@ function getNodePath(node) {
   // For our purposes, there's no worthwhile difference between shadow root and document fragment
   // We can consider them entirely synonymous.
   /** @param {Node} node @return {node is ShadowRoot} */
-  const isShadowRoot = node => node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
+  const isShadowRoot = (node) => node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
   /** @param {Node} node */
-  const getNodeParent = node => isShadowRoot(node) ? node.host : node.parentNode;
+  const getNodeParent = (node) =>
+    isShadowRoot(node) ? node.host : node.parentNode;
 
   /** @param {Node} node @return {number|'a'} */
   function getNodeIndex(node) {
     if (isShadowRoot(node)) {
       // User-agent shadow roots get 'u'. Non-UA shadow roots get 'a'.
-      return 'a';
+      return "a";
     }
     let index = 0;
     let prevNode;
-    while (prevNode = node.previousSibling) { // eslint-disable-line no-cond-assign
+    while ((prevNode = node.previousSibling)) {
+      // eslint-disable-line no-cond-assign
       node = prevNode;
       // skip empty text nodes
-      if (node.nodeType === Node.TEXT_NODE && (node.nodeValue || '').trim().length === 0) continue;
+      if (
+        node.nodeType === Node.TEXT_NODE &&
+        (node.nodeValue || "").trim().length === 0
+      ) {
+        continue;
+      }
       index++;
     }
     return index;
@@ -286,7 +307,7 @@ function getNodePath(node) {
     currentNode = getNodeParent(currentNode);
   }
   path.reverse();
-  return path.join(',');
+  return path.join(",");
 }
 
 /**
@@ -308,9 +329,9 @@ function getNodeSelector(element) {
   function getSelectorPart(element) {
     let part = element.tagName.toLowerCase();
     if (element.id) {
-      part += '#' + element.id;
+      part += "#" + element.id;
     } else if (element.classList.length > 0) {
-      part += '.' + element.classList[0];
+      part += "." + element.classList[0];
     }
     return part;
   }
@@ -322,11 +343,11 @@ function getNodeSelector(element) {
       break;
     }
     element = element.parentElement;
-    if (element.tagName === 'HTML') {
+    if (element.tagName === "HTML") {
       break;
     }
   }
-  return parts.join(' > ');
+  return parts.join(" > ");
 }
 
 /**
@@ -348,18 +369,22 @@ function isPositionFixed(element) {
   }
 
   // Position fixed/sticky has no effect in case when document does not scroll.
-  const htmlEl = document.querySelector('html');
-  if (!htmlEl) throw new Error('html element not found in document');
-  if (htmlEl.scrollHeight <= htmlEl.clientHeight ||
-      !['scroll', 'auto', 'visible'].includes(getStyleAttrValue(htmlEl, 'overflowY'))) {
+  const htmlEl = document.querySelector("html");
+  if (!htmlEl) throw new Error("html element not found in document");
+  if (
+    htmlEl.scrollHeight <= htmlEl.clientHeight ||
+    !["scroll", "auto", "visible"].includes(
+      getStyleAttrValue(htmlEl, "overflowY")
+    )
+  ) {
     return false;
   }
 
   /** @type {HTMLElement | null} */
   let currentEl = element;
   while (currentEl) {
-    const position = getStyleAttrValue(currentEl, 'position');
-    if ((position === 'fixed' || position === 'sticky')) {
+    const position = getStyleAttrValue(currentEl, "position");
+    if (position === "fixed" || position === "sticky") {
       return true;
     }
     currentEl = currentEl.parentElement;
@@ -377,15 +402,17 @@ function isPositionFixed(element) {
 function getNodeLabel(element) {
   const tagName = element.tagName.toLowerCase();
   // html and body content is too broad to be useful, since they contain all page content
-  if (tagName !== 'html' && tagName !== 'body') {
-    const nodeLabel = element instanceof HTMLElement && element.innerText ||
-        element.getAttribute('alt') || element.getAttribute('aria-label');
+  if (tagName !== "html" && tagName !== "body") {
+    const nodeLabel =
+      (element instanceof HTMLElement && element.innerText) ||
+      element.getAttribute("alt") ||
+      element.getAttribute("aria-label");
     if (nodeLabel) {
       return truncate(nodeLabel, 80);
     } else {
       // If no useful label was found then try to get one from a child.
       // E.g. if an a tag contains an image but no text we want the image alt/aria-label attribute.
-      const nodeToUseForLabel = element.querySelector('[alt], [aria-label]');
+      const nodeToUseForLabel = element.querySelector("[alt], [aria-label]");
       if (nodeToUseForLabel) {
         return getNodeLabel(nodeToUseForLabel);
       }
@@ -399,7 +426,8 @@ function getNodeLabel(element) {
  * @return {LH.Artifacts.Rect}
  */
 function getBoundingClientRect(element) {
-  const realBoundingClientRect = window.__HTMLElementBoundingClientRect ||
+  const realBoundingClientRect =
+    window.__HTMLElementBoundingClientRect ||
     window.HTMLElement.prototype.getBoundingClientRect;
   // The protocol does not serialize getters, so extract the values explicitly.
   const rect = realBoundingClientRect.call(element);
@@ -421,7 +449,9 @@ function getBoundingClientRect(element) {
  */
 function wrapRequestIdleCallback(cpuSlowdownMultiplier) {
   const safetyAllowanceMs = 10;
-  const maxExecutionTimeMs = Math.floor((50 - safetyAllowanceMs) / cpuSlowdownMultiplier);
+  const maxExecutionTimeMs = Math.floor(
+    (50 - safetyAllowanceMs) / cpuSlowdownMultiplier
+  );
   const nativeRequestIdleCallback = window.requestIdleCallback;
   window.requestIdleCallback = (cb, options) => {
     /**
@@ -434,18 +464,20 @@ function wrapRequestIdleCallback(cpuSlowdownMultiplier) {
       deadline.timeRemaining = () => {
         // @ts-expect-error - access non-standard property.
         const timeRemaining = deadline.__timeRemaining();
-        return Math.min(timeRemaining, Math.max(0, maxExecutionTimeMs - (Date.now() - start))
+        return Math.min(
+          timeRemaining,
+          Math.max(0, maxExecutionTimeMs - (Date.now() - start))
         );
       };
       deadline.timeRemaining.toString = () => {
-        return 'function timeRemaining() { [native code] }';
+        return "function timeRemaining() { [native code] }";
       };
       cb(deadline);
     };
     return nativeRequestIdleCallback(cbWrap, options);
   };
   window.requestIdleCallback.toString = () => {
-    return 'function requestIdleCallback() { [native code] }';
+    return "function requestIdleCallback() { [native code] }";
   };
 }
 
@@ -481,15 +513,16 @@ function getNodeDetails(element) {
   // We also dedupe this id so that details collected for an element within the same
   // pass and execution context will share the same id. Not technically important, but
   // cuts down on some duplication.
-  let lhId = window.__lighthouseNodesDontTouchOrAllVarianceGoesAway.get(element);
+  let lhId =
+    window.__lighthouseNodesDontTouchOrAllVarianceGoesAway.get(element);
   if (!lhId) {
     lhId = [
-      window.__lighthouseExecutionContextUniqueIdentifier === undefined ?
-        'page' :
-        window.__lighthouseExecutionContextUniqueIdentifier,
+      window.__lighthouseExecutionContextUniqueIdentifier === undefined
+        ? "page"
+        : window.__lighthouseExecutionContextUniqueIdentifier,
       window.__lighthouseNodesDontTouchOrAllVarianceGoesAway.size,
       element.tagName,
-    ].join('-');
+    ].join("-");
     window.__lighthouseNodesDontTouchOrAllVarianceGoesAway.set(element, lhId);
   }
 
@@ -525,7 +558,7 @@ function isBundledEnvironment() {
   try {
     // Not foolproof, but `lighthouse-logger` is a dependency of lighthouse that should always be resolvable.
     // `require.resolve` will only throw in atypical/bundled environments.
-    require.resolve('lighthouse-logger');
+    require.resolve("lighthouse-logger");
     return false;
   } catch (err) {
     return true;
@@ -544,20 +577,21 @@ const esbuildFunctionWrapperString = createEsbuildFunctionWrapper();
 
 function createEsbuildFunctionWrapper() {
   if (!isBundledEnvironment()) {
-    return '';
+    return "";
   }
 
-  const functionAsString = (()=>{
+  const functionAsString = (() => {
     // eslint-disable-next-line no-unused-vars
-    const a = ()=>{};
-  }).toString()
+    const a = () => {};
+  })
+    .toString()
     // When not minified, esbuild annotates the call to this function wrapper with PURE.
     // We know further that the name of the wrapper function should be `__name`, but let's not
     // hardcode that. Remove the PURE annotation to simplify the regex.
-    .replace('/* @__PURE__ */', '');
+    .replace("/* @__PURE__ */", "");
   const functionStringMatch = functionAsString.match(/=\s*([\w_]+)\(/);
   if (!functionStringMatch) {
-    throw new Error('Could not determine esbuild function wrapper name');
+    throw new Error("Could not determine esbuild function wrapper name");
   }
 
   /**
@@ -565,7 +599,7 @@ function createEsbuildFunctionWrapper() {
    * @param {string} value
    */
   const esbuildFunctionWrapper = (fn, value) =>
-    Object.defineProperty(fn, 'name', {value, configurable: true});
+    Object.defineProperty(fn, "name", { value, configurable: true });
   const wrapperFnName = functionStringMatch[1];
   return `let ${wrapperFnName}=${esbuildFunctionWrapper}`;
 }
@@ -591,7 +625,79 @@ const names = {
   getNodeLabel: getRuntimeFunctionName(getNodeLabel),
   getOuterHTMLSnippet: getRuntimeFunctionName(getOuterHTMLSnippet),
   getNodeDetails: getRuntimeFunctionName(getNodeDetails),
+  getElementsInDocument: getRuntimeFunctionName(getElementsInDocument),
+  getBoundingClientRect: getRuntimeFunctionName(getBoundingClientRect),
+  getNodeSelector: getRuntimeFunctionName(getNodeSelector),
+  getNodePath: getRuntimeFunctionName(getNodePath),
+  wrapRuntimeEvalErrorInBrowser: getRuntimeFunctionName(
+    wrapRuntimeEvalErrorInBrowser
+  ),
+  computeBenchmarkIndex: getRuntimeFunctionName(computeBenchmarkIndex),
+  isPositionFixed: getRuntimeFunctionName(isPositionFixed),
+  wrapRequestIdleCallback: getRuntimeFunctionName(wrapRequestIdleCallback),
+  getRuntimeFunctionName: getRuntimeFunctionName(getRuntimeFunctionName),
 };
+
+/** @type {string} */
+const getRuntimeFunctionNameRawString = getRuntimeFunctionName.toString();
+getRuntimeFunctionName.toString =
+  () => `function ${names.getRuntimeFunctionName}(fn) {
+  return (${getRuntimeFunctionNameRawString})(fn);
+}`;
+
+/** @type {string} */
+const wrapRequestIdleCallbackRawString = wrapRequestIdleCallback.toString();
+wrapRequestIdleCallback.toString =
+  () => `function ${names.wrapRequestIdleCallback}(cpuSlowdownMultiplier) {
+  return (${wrapRequestIdleCallbackRawString})(cpuSlowdownMultiplier);
+}`;
+
+/** @type {string} */
+const isPositionFixedRawString = isPositionFixed.toString();
+isPositionFixed.toString = () => `function ${names.isPositionFixed}(element) {
+  return (${isPositionFixedRawString})(element);
+}`;
+
+/** @type {string} */
+const computeBenchmarkIndexRawString = computeBenchmarkIndex.toString();
+computeBenchmarkIndex.toString =
+  () => `function ${names.computeBenchmarkIndex}() {
+  return (${computeBenchmarkIndexRawString})();
+}`;
+
+/** @type {string} */
+const wrapRuntimeEvalErrorInBrowserRawString =
+  wrapRuntimeEvalErrorInBrowser.toString();
+wrapRuntimeEvalErrorInBrowser.toString =
+  () => `function ${names.wrapRuntimeEvalErrorInBrowser}(err) {
+  return (${wrapRuntimeEvalErrorInBrowserRawString})(err);
+}`;
+
+/** @type {string} */
+const getNodePathRawString = getNodePath.toString();
+getNodePath.toString = () => `function ${names.getNodePath}(node) {
+  return (${getNodePathRawString})(node);
+}`;
+
+/** @type {string} */
+const getNodeSelectorRawString = getNodeSelector.toString();
+getNodeSelector.toString = () => `function ${names.getNodeSelector}(element) {
+  return (${getNodeSelectorRawString})(element);
+}`;
+
+/** @type {string} */
+const getElementsInDocumentRawString = getElementsInDocument.toString();
+getElementsInDocument.toString =
+  () => `function ${names.getElementsInDocument}(selector) {
+  return (${getElementsInDocumentRawString})(selector);
+}`;
+
+/** @type {string} */
+const getBoundingClientRectRawString = getBoundingClientRect.toString();
+getBoundingClientRect.toString =
+  () => `function ${names.getBoundingClientRect}(element) {
+  return (${getBoundingClientRectRawString})(element);
+}`;
 
 truncate.toString = () => `function ${names.truncate}(string, characterLimit) {
   const Util = { ${Util.truncate} };
@@ -608,7 +714,8 @@ getNodeLabel.toString = () => `function ${names.getNodeLabel}(element) {
 /** @type {string} */
 const getOuterHTMLSnippetRawString = getOuterHTMLSnippet.toString();
 // eslint-disable-next-line max-len
-getOuterHTMLSnippet.toString = () => `function ${names.getOuterHTMLSnippet}(element, ignoreAttrs = [], snippetCharacterLimit = 500) {
+getOuterHTMLSnippet.toString =
+  () => `function ${names.getOuterHTMLSnippet}(element, ignoreAttrs = [], snippetCharacterLimit = 500) {
   ${truncate};
   return (${getOuterHTMLSnippetRawString})(element, ignoreAttrs, snippetCharacterLimit);
 }`;
@@ -620,8 +727,8 @@ getNodeDetails.toString = () => `function ${names.getNodeDetails}(element) {
   ${getNodePath};
   ${getNodeSelector};
   ${getBoundingClientRect};
-  ${getOuterHTMLSnippetRawString};
-  ${getNodeLabelRawString};
+  ${getOuterHTMLSnippet};
+  ${getNodeLabel};
   return (${getNodeDetailsRawString})(element);
 }`;
 
