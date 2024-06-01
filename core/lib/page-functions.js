@@ -153,7 +153,7 @@ function getOuterHTMLSnippet(element, ignoreAttrs = [], snippetCharacterLimit = 
       }
       charCount += attributeName.length + attributeValue.length;
     }
-
+ 
     const reOpeningTag = /^[\s\S]*?>/;
     const [match] = clone.outerHTML.match(reOpeningTag) || [];
     if (match && charCount > snippetCharacterLimit) {
@@ -575,9 +575,12 @@ function createEsbuildFunctionWrapper() {
  * @return {string}
  */
 function getRuntimeFunctionName(fn) {
-  const match = fn.toString().match(/function ([\w$]+)/);
-  if (!match) throw new Error(`could not find function name for: ${fn}`);
-  return match[1];
+  // Does not work with Bun
+  // const match = fn.toString().match(/function ([\w$]+)/);
+  // if (!match) throw new Error(`could not find function name for: ${fn}`);
+  // return match[1];
+  if (!fn.name) throw new Error(`could not find function name for: ${fn}`);
+  return fn.name;
 }
 
 // We setup a number of our page functions to automatically include their dependencies.
