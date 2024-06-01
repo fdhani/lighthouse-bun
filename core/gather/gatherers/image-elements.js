@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -29,6 +30,7 @@ function getClientRect(element) {
   };
 }
 
+/** @type {string} */
 const getClientRectRawString = getClientRect.toString();
 getClientRect.toString = () => `function ${getClientRect.name}(element) {
   return (${getClientRectRawString})(element);
@@ -50,6 +52,7 @@ function getPosition(element, computedStyle) {
   return computedStyle.getPropertyValue("position");
 }
 
+/** @type {string} */
 const getPositionRawString = getPosition.toString();
 getPosition.toString =
   () => `function ${getPosition.name}(element, computedStyle) {
@@ -103,6 +106,8 @@ function getHTMLImages(allElements) {
     };
   });
 }
+
+/** @type {string} */
 const getHTMLImagesRawString = getHTMLImages.toString();
 getHTMLImages.toString = () => `function ${getHTMLImages.name}(allElements) {
   return (${getHTMLImagesRawString})(allElements);
@@ -158,6 +163,8 @@ function getCSSImages(allElements) {
 
   return images;
 }
+
+/** @type {string} */
 const getCSSImagesRawString = getCSSImages.toString();
 getCSSImages.toString = () => `function ${getCSSImages.name}(allElements) {
   return (${getCSSImagesRawString})(allElements);

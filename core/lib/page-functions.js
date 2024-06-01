@@ -715,6 +715,7 @@ getNodeLabel.toString = () => `function ${names.getNodeLabel}(element) {
 const getOuterHTMLSnippetRawString = getOuterHTMLSnippet.toString();
 // eslint-disable-next-line max-len
 getOuterHTMLSnippet.toString =
+  // eslint-disable-next-line max-len
   () => `function ${names.getOuterHTMLSnippet}(element, ignoreAttrs = [], snippetCharacterLimit = 500) {
   ${truncate};
   return (${getOuterHTMLSnippetRawString})(element, ignoreAttrs, snippetCharacterLimit);
