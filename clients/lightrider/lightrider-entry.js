@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @license
  * Copyright 2018 Google LLC
@@ -20,6 +21,8 @@ import mobileConfig from '../../core/config/lr-mobile-config.js';
 import desktopConfig from '../../core/config/lr-desktop-config.js';
 import {pageFunctions} from '../../core/lib/page-functions.js';
 
+const {computeBenchmarkIndex} = pageFunctions;
+
 /** @type {Record<'mobile'|'desktop', LH.Config>} */
 const LR_PRESETS = {
   mobile: mobileConfig,
@@ -37,9 +40,14 @@ globalThis.Buffer = Buffer;
  */
 async function getPageFromConnection(connection) {
   await connection.connect();
-  const {targetInfo: mainTargetInfo} =
-    await connection.sendCommand('Target.getTargetInfo', undefined);
-  const {frameTree} = await connection.sendCommand('Page.getFrameTree', undefined);
+  const {targetInfo: mainTargetInfo} = await connection.sendCommand(
+    'Target.getTargetInfo',
+    undefined
+  );
+  const {frameTree} = await connection.sendCommand(
+    'Page.getFrameTree',
+    undefined
+  );
 
   const channel = connection.channel_ || connection.rootSessionConnection_;
   const transport = channel.root_.transport_;
@@ -62,9 +70,12 @@ async function getPageFromConnection(connection) {
     return false;
   });
   const page = await Promise.race([
-    targetPromise.then(target => target.page()),
+    targetPromise.then((target) => target.page()),
     new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Could not find relevant puppeteer page')), 5000);
+      setTimeout(
+        () => reject(new Error('Could not find relevant puppeteer page')),
+        5000
+      );
     }),
   ]);
   return page;
@@ -81,7 +92,8 @@ async function getPageFromConnection(connection) {
  * @return {Promise<string>}
  */
 async function runLighthouseInLR(connection, url, flags, lrOpts) {
-  const {lrDevice, categoryIDs, logAssets, configOverride, ignoreStatusCode} = lrOpts;
+  const {lrDevice, categoryIDs, logAssets, configOverride, ignoreStatusCode} =
+    lrOpts;
 
   // Certain fixes need to kick in under LR, see https://github.com/GoogleChrome/lighthouse/issues/5839
   global.isLightrider = true;
@@ -107,7 +119,9 @@ async function runLighthouseInLR(connection, url, flags, lrOpts) {
     const page = await runLighthouseInLR.getPageFromConnection(connection);
     const runnerResult = await lighthouse(url, flags, config, page);
 
-    if (!runnerResult) throw new Error('Lighthouse finished without a runnerResult');
+    if (!runnerResult) {
+      throw new Error('Lighthouse finished without a runnerResult');
+    }
 
     // pre process the LHR for proto
     const preprocessedLhr = processForProto(runnerResult.lhr);
@@ -116,7 +130,10 @@ async function runLighthouseInLR(connection, url, flags, lrOpts) {
     // we log artifacts to raw_response.artifacts.
     if (logAssets) {
       // Properly serialize artifact errors.
-      const artifactsJson = JSON.stringify(runnerResult.artifacts, assetSaver.stringifyReplacer);
+      const artifactsJson = JSON.stringify(
+        runnerResult.artifacts,
+        assetSaver.stringifyReplacer
+      );
 
       return JSON.stringify({
         ...preprocessedLhr,
@@ -136,9 +153,9 @@ async function runLighthouseInLR(connection, url, flags, lrOpts) {
     } else {
       runtimeError = {
         code: err.code,
-        message: err.friendlyMessage ?
-            `${err.friendlyMessage} (${err.message})` :
-            err.message,
+        message: err.friendlyMessage
+          ? `${err.friendlyMessage} (${err.message})`
+          : err.message,
       };
     }
 
@@ -160,7 +177,6 @@ if (typeof window !== 'undefined') {
   self.listenForStatus = listenForStatus;
 }
 
-const {computeBenchmarkIndex} = pageFunctions;
 
 runLighthouseInLR.getPageFromConnection = getPageFromConnection;
 

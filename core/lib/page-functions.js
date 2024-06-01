@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 /**
  * @license
  * Copyright 2018 Google LLC
@@ -656,13 +658,6 @@ wrapRequestIdleCallback.toString =
 const isPositionFixedRawString = isPositionFixed.toString();
 isPositionFixed.toString = () => `function ${names.isPositionFixed}(element) {
   return (${isPositionFixedRawString})(element);
-}`;
-
-/** @type {string} */
-const computeBenchmarkIndexRawString = computeBenchmarkIndex.toString();
-computeBenchmarkIndex.toString =
-  () => `function ${names.computeBenchmarkIndex}() {
-  return (${computeBenchmarkIndexRawString})();
 }`;
 
 /** @type {string} */

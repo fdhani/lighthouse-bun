@@ -1,6 +1,7 @@
 // Base compiler options for all tsconfig files.
 
 {
+  "noEmit": true,
   "compilerOptions": {
     "composite": true,
 
